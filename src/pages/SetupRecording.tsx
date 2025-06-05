@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Camera, Mic, CheckCircle, XCircle, ArrowRight, AlertCircle } from 'lucide-react';
+import { Camera, Mic, CheckCircle, XCircle, ArrowRight, AlertCircle, Moon, Sun, Brain } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { useTheme } from 'next-themes';
 import Chatbot from '@/components/Chatbot';
 
 const SetupRecording = () => {
@@ -11,18 +13,32 @@ const SetupRecording = () => {
   const [microphonePermission, setMicrophonePermission] = useState<boolean | null>(null);
   const [isTestingCamera, setIsTestingCamera] = useState(false);
   const [isTestingMicrophone, setIsTestingMicrophone] = useState(false);
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { theme, setTheme } = useTheme();
 
   const requestCameraPermission = async () => {
     setIsTestingCamera(true);
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          facingMode: 'user'
+        }
+      });
       setCameraPermission(true);
-      stream.getTracks().forEach(track => track.stop());
+      setCameraStream(stream);
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+      
       toast({
         title: "Camera access granted",
-        description: "Your camera is working properly.",
+        description: "Your camera is working properly and recording.",
       });
     } catch (error) {
       setCameraPermission(false);
@@ -75,34 +91,82 @@ const SetupRecording = () => {
         setMicrophonePermission(true);
       }
     });
+
+    // Cleanup camera stream on unmount
+    return () => {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+      }
+    };
   }, []);
 
   const allPermissionsGranted = cameraPermission && microphonePermission;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="max-w-4xl mx-auto px-6 py-16">
+      <div className="max-w-4xl mx-auto px-6 py-16 relative">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8 animate-fade-in">
+          <div className="flex items-center space-x-3">
+            <Brain className="w-8 h-8 text-emerald-600 animate-float" />
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">VisionHire</h1>
+          </div>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className="border-emerald-200 hover:bg-emerald-50 dark:border-gray-600 dark:hover:bg-gray-700 transition-all duration-300 hover:scale-110"
+          >
+            {theme === 'dark' ? (
+              <Sun className="h-4 w-4 text-emerald-600" />
+            ) : (
+              <Moon className="h-4 w-4 text-emerald-600" />
+            )}
+          </Button>
+        </div>
+
+        {/* Camera Preview - Fixed position */}
+        {cameraStream && (
+          <div className="fixed top-4 right-4 z-50 animate-fade-in">
+            <div className="relative">
+              <video
+                ref={videoRef}
+                autoPlay
+                muted
+                playsInline
+                className="w-48 h-36 rounded-lg border-2 border-emerald-500 shadow-lg object-cover"
+              />
+              <div className="absolute top-2 left-2">
+                <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+              </div>
+              <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+                Live
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Setup <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Recording</span>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            Setup <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">Recording</span>
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
             We need access to your camera and microphone to conduct the interview. Please grant permissions below.
           </p>
         </div>
 
         <div className="space-y-6">
           {/* Camera Setup */}
-          <Card className="bg-white/80 backdrop-blur-sm border-blue-200 shadow-lg">
+          <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-emerald-200 dark:border-gray-600 shadow-lg">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <Camera className="w-6 h-6 text-blue-600" />
+                  <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
+                    <Camera className="w-6 h-6 text-emerald-600" />
                   </div>
                   <div>
-                    <CardTitle className="text-blue-800">Camera Access</CardTitle>
-                    <CardDescription className="text-blue-600">
+                    <CardTitle className="text-emerald-800 dark:text-emerald-200">Camera Access</CardTitle>
+                    <CardDescription className="text-emerald-600 dark:text-emerald-400">
                       Required for video recording during the interview
                     </CardDescription>
                   </div>
@@ -117,12 +181,12 @@ const SetupRecording = () => {
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-700 mb-2">
-                    {cameraPermission === true && "Camera access granted successfully"}
+                  <p className="text-gray-700 dark:text-gray-300 mb-2">
+                    {cameraPermission === true && "Camera access granted successfully - Live feed active"}
                     {cameraPermission === false && "Camera access denied or unavailable"}
                     {cameraPermission === null && "Camera permission not yet requested"}
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
                     Your camera will be used to record your responses during the interview.
                   </p>
                 </div>
@@ -130,7 +194,7 @@ const SetupRecording = () => {
                   onClick={requestCameraPermission}
                   disabled={isTestingCamera || cameraPermission === true}
                   variant={cameraPermission === true ? "outline" : "default"}
-                  className={cameraPermission === true ? "border-green-300 text-green-700" : ""}
+                  className={cameraPermission === true ? "border-green-300 text-green-700 dark:border-green-600 dark:text-green-400" : "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white"}
                 >
                   {isTestingCamera ? "Testing..." : cameraPermission === true ? "Granted" : "Allow Camera"}
                 </Button>
@@ -139,16 +203,16 @@ const SetupRecording = () => {
           </Card>
 
           {/* Microphone Setup */}
-          <Card className="bg-white/80 backdrop-blur-sm border-purple-200 shadow-lg">
+          <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-emerald-200 dark:border-gray-600 shadow-lg">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <Mic className="w-6 h-6 text-purple-600" />
+                  <div className="w-12 h-12 bg-teal-100 dark:bg-teal-900/30 rounded-lg flex items-center justify-center">
+                    <Mic className="w-6 h-6 text-teal-600" />
                   </div>
                   <div>
-                    <CardTitle className="text-purple-800">Microphone Access</CardTitle>
-                    <CardDescription className="text-purple-600">
+                    <CardTitle className="text-teal-800 dark:text-teal-200">Microphone Access</CardTitle>
+                    <CardDescription className="text-teal-600 dark:text-teal-400">
                       Required for voice responses during the interview
                     </CardDescription>
                   </div>
@@ -163,12 +227,12 @@ const SetupRecording = () => {
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-700 mb-2">
+                  <p className="text-gray-700 dark:text-gray-300 mb-2">
                     {microphonePermission === true && "Microphone access granted successfully"}
                     {microphonePermission === false && "Microphone access denied or unavailable"}
                     {microphonePermission === null && "Microphone permission not yet requested"}
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
                     Your microphone will be used to capture your voice responses.
                   </p>
                 </div>
@@ -176,7 +240,7 @@ const SetupRecording = () => {
                   onClick={requestMicrophonePermission}
                   disabled={isTestingMicrophone || microphonePermission === true}
                   variant={microphonePermission === true ? "outline" : "default"}
-                  className={microphonePermission === true ? "border-green-300 text-green-700" : ""}
+                  className={microphonePermission === true ? "border-green-300 text-green-700 dark:border-green-600 dark:text-green-400" : "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white"}
                 >
                   {isTestingMicrophone ? "Testing..." : microphonePermission === true ? "Granted" : "Allow Microphone"}
                 </Button>
@@ -186,13 +250,13 @@ const SetupRecording = () => {
 
           {/* Status Card */}
           {allPermissionsGranted && (
-            <Card className="bg-green-50 border-green-200 shadow-lg">
+            <Card className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 shadow-lg animate-fade-in">
               <CardContent className="pt-6">
                 <div className="flex items-center space-x-3">
                   <CheckCircle className="w-8 h-8 text-green-600" />
                   <div>
-                    <h3 className="text-lg font-semibold text-green-800">Ready to Start!</h3>
-                    <p className="text-green-700">All permissions granted. You can now begin your interview.</p>
+                    <h3 className="text-lg font-semibold text-green-800 dark:text-green-200">Ready to Start!</h3>
+                    <p className="text-green-700 dark:text-green-300">All permissions granted. Your camera is live and recording. You can now begin your interview.</p>
                   </div>
                 </div>
               </CardContent>
@@ -200,13 +264,13 @@ const SetupRecording = () => {
           )}
 
           {(cameraPermission === false || microphonePermission === false) && (
-            <Card className="bg-red-50 border-red-200 shadow-lg">
+            <Card className="bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 shadow-lg">
               <CardContent className="pt-6">
                 <div className="flex items-center space-x-3">
                   <XCircle className="w-8 h-8 text-red-600" />
                   <div>
-                    <h3 className="text-lg font-semibold text-red-800">Permissions Required</h3>
-                    <p className="text-red-700">Please grant camera and microphone access to continue with the interview.</p>
+                    <h3 className="text-lg font-semibold text-red-800 dark:text-red-200">Permissions Required</h3>
+                    <p className="text-red-700 dark:text-red-300">Please grant camera and microphone access to continue with the interview.</p>
                   </div>
                 </div>
               </CardContent>
@@ -218,7 +282,7 @@ const SetupRecording = () => {
             <Button
               variant="outline"
               onClick={() => navigate('/interview-guidelines')}
-              className="border-gray-300 hover:bg-gray-50"
+              className="border-gray-300 hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700 transition-all duration-300 hover:scale-105"
             >
               Back to Guidelines
             </Button>
@@ -226,7 +290,7 @@ const SetupRecording = () => {
             <Button
               onClick={handleStartInterview}
               disabled={!allPermissionsGranted}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105"
             >
               Start Interview
               <ArrowRight className="ml-2 w-4 h-4" />

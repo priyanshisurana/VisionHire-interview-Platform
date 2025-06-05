@@ -1,3 +1,4 @@
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -46,7 +47,7 @@ const UploadResume = () => {
         <div className="flex justify-between items-center mb-8 animate-fade-in">
           <div className="flex items-center space-x-3">
             <Brain className="w-8 h-8 text-emerald-600 animate-float" />
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">AI Interviewer Pro</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">VisionHire</h1>
           </div>
           <Button
             variant="outline"
