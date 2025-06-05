@@ -1,133 +1,140 @@
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Upload, Brain, Mic, Camera, Award } from 'lucide-react';
+import { Brain, Code, MessageSquare, FileText, Camera, Award, Moon, Sun } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from 'next-themes';
 
 const Index = () => {
   const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
+
+  const features = [
+    {
+      icon: Brain,
+      title: "AI-Powered Questions",
+      description: "Get personalized interview questions based on your resume and experience level."
+    },
+    {
+      icon: Code,
+      title: "Software Engineering Focus",
+      description: "Specialized questions covering algorithms, data structures, system design, and more."
+    },
+    {
+      icon: MessageSquare,
+      title: "Voice & Text Responses",
+      description: "Answer questions using your voice or by typing - whatever feels more comfortable."
+    },
+    {
+      icon: FileText,
+      title: "Resume Analysis",
+      description: "Upload your resume to get targeted questions about your skills and projects."
+    },
+    {
+      icon: Camera,
+      title: "Real Interview Experience",
+      description: "Practice with camera and microphone enabled for authentic interview conditions."
+    },
+    {
+      icon: Award,
+      title: "Instant Feedback",
+      description: "Receive intelligent feedback and follow-up questions based on your responses."
+    }
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-blue-100 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <Brain className="w-6 h-6 text-white" />
-              </div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                AI Interviewer Pro
-              </h1>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Header with Theme Toggle */}
+        <div className="flex justify-between items-center mb-16">
+          <div className="flex items-center space-x-3">
+            <Brain className="w-8 h-8 text-emerald-600" />
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">AI Interviewer Pro</h1>
           </div>
-        </div>
-      </header>
-
-      {/* Hero Section */}
-      <main className="max-w-7xl mx-auto px-6 py-16">
-        <div className="text-center mb-16">
-          <h2 className="text-5xl font-bold text-gray-900 mb-6">
-            Ace Your Next
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"> Software Engineering </span>
-            Interview
-          </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-            Practice with our AI-powered interviewer that adapts to your responses, provides intelligent follow-ups, 
-            and helps you prepare for real-world technical interviews.
-          </p>
-          <Button 
-            onClick={() => navigate('/upload-resume')}
-            size="lg" 
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className="border-emerald-200 hover:bg-emerald-50 dark:border-gray-600 dark:hover:bg-gray-700"
           >
-            Start Interview Practice
-            <Upload className="ml-2 w-5 h-5" />
+            {theme === 'dark' ? (
+              <Sun className="h-4 w-4 text-emerald-600" />
+            ) : (
+              <Moon className="h-4 w-4 text-emerald-600" />
+            )}
+          </Button>
+        </div>
+
+        {/* Hero Section */}
+        <div className="text-center mb-20">
+          <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-6">
+            Master Your <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">Software Engineering</span> Interviews
+          </h1>
+          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-10">
+            Practice with our AI-powered interviewer that adapts to your responses, provides intelligent follow-ups, 
+            and helps you build confidence for your next software engineering interview.
+          </p>
+          <Button
+            onClick={() => navigate('/upload-resume')}
+            className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-8 py-4 text-lg font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+          >
+            Start Your Interview Practice
+            <Brain className="ml-2 w-5 h-5" />
           </Button>
         </div>
 
         {/* Features Grid */}
-        <div className="grid md:grid-cols-3 gap-8 mb-16">
-          <Card className="bg-white/70 backdrop-blur-sm border-blue-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-            <CardHeader>
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mb-4">
-                <Brain className="w-6 h-6 text-white" />
-              </div>
-              <CardTitle className="text-blue-900">Adaptive AI Interviewer</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="text-gray-600">
-                Our AI asks intelligent follow-up questions based on your responses, simulating real interview scenarios.
-              </CardDescription>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/70 backdrop-blur-sm border-purple-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-            <CardHeader>
-              <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg flex items-center justify-center mb-4">
-                <Mic className="w-6 h-6 text-white" />
-              </div>
-              <CardTitle className="text-purple-900">Voice & Text Support</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="text-gray-600">
-                Answer questions using voice or text input. Practice your communication skills in your preferred format.
-              </CardDescription>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/70 backdrop-blur-sm border-indigo-200 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-            <CardHeader>
-              <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-lg flex items-center justify-center mb-4">
-                <Award className="w-6 h-6 text-white" />
-              </div>
-              <CardTitle className="text-indigo-900">Resume-Based Questions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="text-gray-600">
-                Upload your resume to get personalized questions tailored to your experience and skills.
-              </CardDescription>
-            </CardContent>
-          </Card>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
+          {features.map((feature, index) => (
+            <Card key={index} className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-emerald-200 dark:border-gray-600 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+              <CardHeader>
+                <feature.icon className="w-12 h-12 text-emerald-600 mb-4" />
+                <CardTitle className="text-xl text-gray-900 dark:text-white">{feature.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-gray-600 dark:text-gray-300">
+                  {feature.description}
+                </CardDescription>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
-        {/* How It Works */}
-        <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-8 border border-blue-100">
-          <h3 className="text-3xl font-bold text-center text-gray-900 mb-8">How It Works</h3>
-          <div className="grid md:grid-cols-4 gap-6">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Upload className="w-8 h-8 text-white" />
+        {/* How it Works Section */}
+        <div className="text-center mb-16">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-12">How It Works</h2>
+          <div className="grid md:grid-cols-4 gap-8">
+            <div className="space-y-4">
+              <div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full flex items-center justify-center mx-auto">
+                <FileText className="w-8 h-8 text-white" />
               </div>
-              <h4 className="font-semibold text-gray-900 mb-2">1. Upload Resume</h4>
-              <p className="text-gray-600 text-sm">Share your resume for personalized questions</p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Upload Resume</h3>
+              <p className="text-gray-600 dark:text-gray-300">Upload your resume to personalize the interview experience</p>
             </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="space-y-4">
+              <div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full flex items-center justify-center mx-auto">
                 <Camera className="w-8 h-8 text-white" />
               </div>
-              <h4 className="font-semibold text-gray-900 mb-2">2. Setup Recording</h4>
-              <p className="text-gray-600 text-sm">Enable camera and microphone</p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Setup Recording</h3>
+              <p className="text-gray-600 dark:text-gray-300">Enable camera and microphone for realistic practice</p>
             </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="space-y-4">
+              <div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full flex items-center justify-center mx-auto">
                 <Brain className="w-8 h-8 text-white" />
               </div>
-              <h4 className="font-semibold text-gray-900 mb-2">3. AI Interview</h4>
-              <p className="text-gray-600 text-sm">Practice with adaptive questions</p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">AI Interview</h3>
+              <p className="text-gray-600 dark:text-gray-300">Answer 10-15 personalized questions with follow-ups</p>
             </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="space-y-4">
+              <div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full flex items-center justify-center mx-auto">
                 <Award className="w-8 h-8 text-white" />
               </div>
-              <h4 className="font-semibold text-gray-900 mb-2">4. Get Feedback</h4>
-              <p className="text-gray-600 text-sm">Receive insights and improvements</p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Get Feedback</h3>
+              <p className="text-gray-600 dark:text-gray-300">Receive detailed feedback and improvement suggestions</p>
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 };
