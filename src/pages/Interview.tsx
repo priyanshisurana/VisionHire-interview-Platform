@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Mic, MicOff, Send, Brain, Clock, MessageSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import Chatbot from '@/components/Chatbot';
 
 interface Question {
   id: number;
@@ -186,7 +186,7 @@ const Interview = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm border-b border-blue-100 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4">
@@ -318,6 +318,9 @@ const Interview = () => {
           </Button>
         </div>
       </main>
+
+      {/* Add Chatbot at the end */}
+      <Chatbot />
     </div>
   );
 };

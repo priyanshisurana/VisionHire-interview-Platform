@@ -1,14 +1,14 @@
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, Home, RotateCcw, Trophy, Clock, MessageSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Chatbot from '@/components/Chatbot';
 
 const InterviewComplete = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="max-w-4xl mx-auto px-6 py-16">
         <div className="text-center mb-12">
           <div className="w-24 h-24 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -157,6 +157,9 @@ const InterviewComplete = () => {
           </p>
         </div>
       </div>
+      
+      {/* Add Chatbot at the end */}
+      <Chatbot />
     </div>
   );
 };

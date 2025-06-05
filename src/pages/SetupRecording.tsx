@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Camera, Mic, CheckCircle, XCircle, ArrowRight, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import Chatbot from '@/components/Chatbot';
 
 const SetupRecording = () => {
   const [cameraPermission, setCameraPermission] = useState<boolean | null>(null);
@@ -80,7 +80,7 @@ const SetupRecording = () => {
   const allPermissionsGranted = cameraPermission && microphonePermission;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="max-w-4xl mx-auto px-6 py-16">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
@@ -234,6 +234,7 @@ const SetupRecording = () => {
           </div>
         </div>
       </div>
+      <Chatbot />
     </div>
   );
 };
