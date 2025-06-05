@@ -22,6 +22,11 @@ const SetupRecording = () => {
   const requestCameraPermission = async () => {
     setIsTestingCamera(true);
     try {
+      // Stop any existing streams first
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: {
           width: { ideal: 1280 },
@@ -29,11 +34,20 @@ const SetupRecording = () => {
           facingMode: 'user'
         }
       });
+      
+      console.log('Camera stream obtained:', stream);
       setCameraPermission(true);
       setCameraStream(stream);
       
+      // Set video source and play
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        try {
+          await videoRef.current.play();
+          console.log('Video is now playing');
+        } catch (playError) {
+          console.error('Error playing video:', playError);
+        }
       }
       
       toast({
@@ -41,6 +55,7 @@ const SetupRecording = () => {
         description: "Your camera is working properly and recording.",
       });
     } catch (error) {
+      console.error('Camera permission error:', error);
       setCameraPermission(false);
       toast({
         title: "Camera access denied",
@@ -100,6 +115,16 @@ const SetupRecording = () => {
     };
   }, []);
 
+  // Auto-play video when stream is available
+  useEffect(() => {
+    if (cameraStream && videoRef.current) {
+      videoRef.current.srcObject = cameraStream;
+      videoRef.current.play().catch(error => {
+        console.error('Error auto-playing video:', error);
+      });
+    }
+  }, [cameraStream]);
+
   const allPermissionsGranted = cameraPermission && microphonePermission;
 
   return (
@@ -125,22 +150,30 @@ const SetupRecording = () => {
           </Button>
         </div>
 
-        {/* Camera Preview - Fixed position */}
-        {cameraStream && (
-          <div className="fixed top-4 right-4 z-50 animate-fade-in">
-            <div className="relative">
+        {/* Camera Preview - Enhanced visibility and positioning */}
+        {cameraStream && cameraPermission && (
+          <div className="fixed top-6 right-6 z-50 animate-fade-in">
+            <div className="relative bg-black rounded-lg shadow-2xl border-4 border-emerald-500">
               <video
                 ref={videoRef}
                 autoPlay
                 muted
                 playsInline
-                className="w-48 h-36 rounded-lg border-2 border-emerald-500 shadow-lg object-cover"
+                className="w-64 h-48 rounded-lg object-cover"
               />
-              <div className="absolute top-2 left-2">
+              {/* Recording indicator */}
+              <div className="absolute top-3 left-3 flex items-center space-x-2">
                 <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                <span className="text-white text-xs font-medium bg-black/70 px-2 py-1 rounded">REC</span>
               </div>
-              <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                Live
+              {/* Live indicator */}
+              <div className="absolute bottom-3 right-3 bg-red-600 text-white text-xs px-3 py-1 rounded font-bold">
+                ● LIVE
+              </div>
+              {/* Camera status */}
+              <div className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded">
+                <Camera className="w-3 h-3 inline mr-1" />
+                ON
               </div>
             </div>
           </div>
@@ -182,7 +215,7 @@ const SetupRecording = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-gray-700 dark:text-gray-300 mb-2">
-                    {cameraPermission === true && "Camera access granted successfully - Live feed active"}
+                    {cameraPermission === true && "Camera access granted successfully - Live feed active in top-right corner"}
                     {cameraPermission === false && "Camera access denied or unavailable"}
                     {cameraPermission === null && "Camera permission not yet requested"}
                   </p>
