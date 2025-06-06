@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Mic, MicOff, Send, Brain, Clock, MessageSquare } from 'lucide-react';
+import { Mic, MicOff, Send, Brain, Clock, MessageSquare, Camera } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import Chatbot from '@/components/Chatbot';
@@ -25,6 +26,8 @@ const Interview = () => {
   const [currentAnswer, setCurrentAnswer] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [timeElapsed, setTimeElapsed] = useState(0);
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -111,13 +114,67 @@ const Interview = () => {
   const totalQuestions = Math.min(questions.length, 15);
   const isLastQuestion = currentQuestionIndex >= totalQuestions - 1;
 
+  // Initialize camera stream
+  const initializeCameraStream = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          facingMode: 'user'
+        }
+      });
+      
+      setCameraStream(stream);
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+      }
+    } catch (error) {
+      console.error('Failed to initialize camera:', error);
+    }
+  };
+
+  // Stop all streams
+  const stopAllStreams = () => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => {
+        track.stop();
+        console.log('Stream track stopped:', track.kind);
+      });
+      setCameraStream(null);
+    }
+  };
+
   useEffect(() => {
+    // Initialize camera if permissions were granted
+    const cameraPermission = sessionStorage.getItem('cameraPermissionGranted');
+    if (cameraPermission === 'true') {
+      initializeCameraStream();
+    }
+
     const timer = setInterval(() => {
       setTimeElapsed(prev => prev + 1);
     }, 1000);
 
-    return () => clearInterval(timer);
+    // Cleanup on unmount
+    return () => {
+      clearInterval(timer);
+      stopAllStreams();
+    };
   }, []);
+
+  // Handle page unload
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      stopAllStreams();
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [cameraStream]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -178,6 +235,8 @@ const Interview = () => {
 
     setTimeout(() => {
       if (isLastQuestion) {
+        // Stop streams before navigating
+        stopAllStreams();
         navigate('/interview-complete');
       } else {
         setCurrentQuestionIndex(prev => prev + 1);
@@ -185,10 +244,46 @@ const Interview = () => {
     }, 1000);
   };
 
+  const handleEndInterviewEarly = () => {
+    if (confirm("Are you sure you want to end the interview early?")) {
+      stopAllStreams();
+      navigate('/interview-complete');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      {/* Camera Preview during interview */}
+      {cameraStream && (
+        <div className="fixed top-6 right-6 z-50 animate-fade-in">
+          <div className="relative bg-black rounded-lg shadow-2xl border-4 border-emerald-500">
+            <video
+              ref={videoRef}
+              autoPlay
+              muted
+              playsInline
+              className="w-64 h-48 rounded-lg object-cover"
+            />
+            {/* Recording indicator */}
+            <div className="absolute top-3 left-3 flex items-center space-x-2">
+              <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+              <span className="text-white text-xs font-medium bg-black/70 px-2 py-1 rounded">REC</span>
+            </div>
+            {/* Live indicator */}
+            <div className="absolute bottom-3 right-3 bg-red-600 text-white text-xs px-3 py-1 rounded font-bold">
+              ● LIVE
+            </div>
+            {/* Camera status */}
+            <div className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded">
+              <Camera className="w-3 h-3 inline mr-1" />
+              ON
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-blue-100 sticky top-0 z-50">
+      <header className="bg-white/80 backdrop-blur-sm border-b border-blue-100 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-6">
@@ -196,7 +291,7 @@ const Interview = () => {
                 <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
                   <Brain className="w-6 h-6 text-white" />
                 </div>
-                <span className="text-xl font-bold text-gray-900">AI Interview</span>
+                <span className="text-xl font-bold text-gray-900">VisionHire Interview</span>
               </div>
               
               <div className="flex items-center space-x-6 text-sm text-gray-600">
@@ -307,11 +402,7 @@ const Interview = () => {
         <div className="mt-8 flex justify-center">
           <Button
             variant="outline"
-            onClick={() => {
-              if (confirm("Are you sure you want to end the interview early?")) {
-                navigate('/interview-complete');
-              }
-            }}
+            onClick={handleEndInterviewEarly}
             className="border-gray-300 hover:bg-gray-50 text-gray-700"
           >
             End Interview Early

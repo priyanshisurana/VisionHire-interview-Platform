@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,13 +18,27 @@ const SetupRecording = () => {
   const { toast } = useToast();
   const { theme, setTheme } = useTheme();
 
+  // Store stream in sessionStorage to pass to interview page
+  const storeStreamForInterview = (stream: MediaStream) => {
+    // We can't store the actual stream, but we can indicate it's available
+    sessionStorage.setItem('cameraPermissionGranted', 'true');
+  };
+
+  const stopAllStreams = () => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => {
+        track.stop();
+        console.log('Camera track stopped:', track.kind);
+      });
+      setCameraStream(null);
+    }
+  };
+
   const requestCameraPermission = async () => {
     setIsTestingCamera(true);
     try {
       // Stop any existing streams first
-      if (cameraStream) {
-        cameraStream.getTracks().forEach(track => track.stop());
-      }
+      stopAllStreams();
 
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: {
@@ -38,6 +51,7 @@ const SetupRecording = () => {
       console.log('Camera stream obtained:', stream);
       setCameraPermission(true);
       setCameraStream(stream);
+      storeStreamForInterview(stream);
       
       // Set video source and play
       if (videoRef.current) {
@@ -72,6 +86,7 @@ const SetupRecording = () => {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       setMicrophonePermission(true);
       stream.getTracks().forEach(track => track.stop());
+      sessionStorage.setItem('microphonePermissionGranted', 'true');
       toast({
         title: "Microphone access granted",
         description: "Your microphone is working properly.",
@@ -107,11 +122,9 @@ const SetupRecording = () => {
       }
     });
 
-    // Cleanup camera stream on unmount
+    // Cleanup camera stream on unmount or navigation
     return () => {
-      if (cameraStream) {
-        cameraStream.getTracks().forEach(track => track.stop());
-      }
+      stopAllStreams();
     };
   }, []);
 
@@ -123,6 +136,18 @@ const SetupRecording = () => {
         console.error('Error auto-playing video:', error);
       });
     }
+  }, [cameraStream]);
+
+  // Handle page unload
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      stopAllStreams();
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
   }, [cameraStream]);
 
   const allPermissionsGranted = cameraPermission && microphonePermission;
